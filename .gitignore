@@ -1,0 +1,26 @@
+# Dependencies
+backend/vendor/
+backend/node_modules/
+frontend/node_modules/
+
+# Environments
+backend/.env
+backend/.env.*
+!backend/.env.example
+
+# IDE / OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+backend/storage/framework/cache/data/*
+backend/storage/framework/sessions/*
+backend/storage/framework/testing/*
+backend/storage/framework/views/*
+backend/storage/logs/*
+
+# Build assets
+frontend/dist/
+frontend/build/
+backend/public/build/
+backend/public/storage
