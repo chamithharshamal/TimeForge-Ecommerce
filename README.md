@@ -91,4 +91,4 @@ By default, the `DatabaseSeeder` creates an admin account if seeded. Check `data
 ## 🔒 License
 This project is proprietary and built for excellence.
 
-**TimeForge** - *Power that shines you.*
+**TimeForge**
