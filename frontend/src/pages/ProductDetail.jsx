@@ -4,8 +4,10 @@ import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { ShoppingCart, ShieldCheck, Truck, RotateCcw, ArrowLeft, Star, ChevronRight } from 'lucide-react';
+import SEO from '../components/SEO';
 
 export default function ProductDetail() {
+
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -15,12 +17,22 @@ export default function ProductDetail() {
   const [loading, setLoading] = useState(true);
   const [adding, setAdding] = useState(false);
   const [quantity, setQuantity] = useState(1);
+  const [selectedColor, setSelectedColor] = useState(null);
+
+  // Parse colors if available
+  const availableColors = watch?.color ? watch.color.split(',').map(c => c.trim()).filter(c => c) : [];
 
   useEffect(() => {
     const fetchWatch = async () => {
       try {
         const { data } = await api.get(`/watches/${id}`);
         setWatch(data);
+        if (data.color) {
+            const colors = data.color.split(',').map(c => c.trim()).filter(c => c);
+            if (colors.length > 0) {
+                setSelectedColor(colors[0]);
+            }
+        }
       } catch (err) {
         console.error("Watch not found", err);
         navigate('/');
@@ -36,8 +48,12 @@ export default function ProductDetail() {
       navigate('/login');
       return;
     }
+    if (availableColors.length > 0 && !selectedColor) {
+        alert("Please select a color/finish.");
+        return;
+    }
     setAdding(true);
-    const success = await addToCart(watch.id, quantity);
+    const success = await addToCart(watch.id, quantity, selectedColor);
     setAdding(false);
     if (success) {
       alert("Added to your collection!");
@@ -51,7 +67,14 @@ export default function ProductDetail() {
 
   return (
     <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 20px' }}>
+      <SEO 
+        title={watch.name}
+        description={watch.description || `Buy the ${watch.name} premium watch at TimeForge. Best prices for luxury timepieces.`}
+        image={watch.image_url}
+        url={window.location.href}
+      />
       {/* Back Button */}
+
       <button 
         onClick={() => navigate(-1)} 
         style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', marginBottom: '24px', padding: '0', transition: '0.3s' }}
@@ -110,9 +133,42 @@ export default function ProductDetail() {
               ${Number(watch.price).toLocaleString(undefined, { minimumFractionDigits: 2 })}
             </div>
 
-            <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem', lineHeight: '1.7', marginBottom: '40px' }}>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem', lineHeight: '1.7', marginBottom: '24px' }}>
               {watch.description || "A masterpiece of horological engineering. This precision instrument combines traditional craftsmanship with contemporary luxury aesthetics, designed for those who value time as their most precious asset."}
             </p>
+
+            {availableColors.length > 0 && (
+              <div style={{ marginBottom: '32px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
+                    <span style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', fontWeight: '500', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                      Choose Color / Finish
+                    </span>
+                    <span style={{ fontSize: '0.875rem', color: 'var(--text-primary)', fontWeight: '600' }}>
+                        {selectedColor}
+                    </span>
+                </div>
+                <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                    {availableColors.map((colorName, idx) => (
+                        <button 
+                            key={idx}
+                            onClick={() => setSelectedColor(colorName)}
+                            style={{
+                                padding: '10px 16px',
+                                background: selectedColor === colorName ? 'rgba(212, 175, 55, 0.15)' : 'var(--bg-glass)',
+                                border: `1px solid ${selectedColor === colorName ? 'var(--accent-primary)' : 'var(--border-color)'}`,
+                                borderRadius: '8px',
+                                color: selectedColor === colorName ? 'var(--accent-primary)' : 'var(--text-primary)',
+                                fontWeight: '500',
+                                cursor: 'pointer',
+                                transition: 'var(--transition-smooth)'
+                            }}
+                        >
+                            {colorName}
+                        </button>
+                    ))}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Configuration */}

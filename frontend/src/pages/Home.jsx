@@ -4,8 +4,10 @@ import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import api from '../api/axios';
 import { ShoppingCart, ShieldCheck, Truck, RotateCcw, Star, Clock, ArrowRight, Eye } from 'lucide-react';
+import SEO from '../components/SEO';
 
 export default function Home() {
+
   const { user } = useAuth();
   const { addToCart } = useCart();
   const navigate = useNavigate();
@@ -59,7 +61,11 @@ export default function Home() {
 
   return (
     <div style={{ background: 'var(--bg-color)' }}>
-      
+      <SEO 
+        title="Forge Your Destiny" 
+        description="TimeForge - Exclusive, limited-edition automated timepieces engineered for the relentless. Shop the collection."
+      />
+
       {/* Promo Banner / Trust Signals */}
       <div style={{ background: 'var(--accent-primary)', color: '#000', padding: '10px', textAlign: 'center', fontSize: '0.875rem', fontWeight: '600', letterSpacing: '0.5px' }}>
         FREE EXPEDITED SHIPPING ON ORDERS OVER $500 • 30-DAY SECURE RETURNS
