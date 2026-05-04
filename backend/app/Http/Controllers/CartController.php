@@ -28,17 +28,26 @@ class CartController extends Controller
     {
         $request->validate([
             'watch_id' => 'required|exists:watches,id',
-            'quantity' => 'nullable|integer|min:1'
+            'quantity' => 'nullable|integer|min:1',
+            'color' => 'nullable|string|max:255',
         ]);
 
         $userId = Auth::id();
         $watchId = $request->watch_id;
         $qty = $request->quantity ?? 1;
+        $color = $request->color;
 
-        // Check if item already exists in cart
-        $item = CartItem::where('user_id', $userId)
-            ->where('watch_id', $watchId)
-            ->first();
+        // Check if item already exists in cart with same color
+        $itemQuery = CartItem::where('user_id', $userId)
+            ->where('watch_id', $watchId);
+
+        if ($color) {
+            $itemQuery->where('color', $color);
+        } else {
+            $itemQuery->whereNull('color');
+        }
+
+        $item = $itemQuery->first();
 
         if ($item) {
             $item->increment('quantity', $qty);
@@ -46,7 +55,8 @@ class CartController extends Controller
             $item = CartItem::create([
                 'user_id' => $userId,
                 'watch_id' => $watchId,
-                'quantity' => $qty
+                'quantity' => $qty,
+                'color' => $color
             ]);
         }
 

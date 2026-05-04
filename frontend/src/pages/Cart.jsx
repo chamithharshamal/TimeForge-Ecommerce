@@ -73,6 +73,11 @@ export default function Cart() {
               
               <div style={{ flex: 1, width: '100%' }}>
                 <h3 style={{ fontSize: '1.1rem', marginBottom: '4px' }}>{item.watch.name}</h3>
+                {item.color && (
+                  <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '8px' }}>
+                    Color: <span style={{ color: 'var(--text-primary)', fontWeight: '500' }}>{item.color}</span>
+                  </p>
+                )}
                 <p style={{ color: 'var(--accent-primary)', fontWeight: '500', marginBottom: '12px' }}>
                   ${Number(item.watch.price).toLocaleString()}
                 </p>

@@ -16,6 +16,7 @@ class Watch extends Model
         'stock',
         'image_path',
         'badge',
+        'color',
     ];
 
     // Append a fully qualified URL for the image

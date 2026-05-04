@@ -30,10 +30,10 @@ export function CartProvider({ children }) {
     loadCart();
   }, [user]);
 
-  const addToCart = async (watchId, quantity = 1) => {
+  const addToCart = async (watchId, quantity = 1, color = null) => {
     if (!user) return false; // Controller should handle redirection or UI should block
     try {
-      const { data } = await api.post('/cart', { watch_id: watchId, quantity });
+      const { data } = await api.post('/cart', { watch_id: watchId, quantity, color });
       // Reload cart to get merged data and watch relationships
       await loadCart();
       return true;

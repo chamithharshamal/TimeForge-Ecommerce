@@ -13,6 +13,7 @@ class CartItem extends Model
         'user_id',
         'watch_id',
         'quantity',
+        'color',
     ];
 
     public function user()

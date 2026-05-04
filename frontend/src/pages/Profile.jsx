@@ -177,6 +177,11 @@ const Profile = () => {
                             />
                             <div style={{ flex: 1 }}>
                               <h4 className="text-white" style={{ fontSize: '1rem', marginBottom: '4px' }}>{item.watch.name}</h4>
+                              {item.color && (
+                                <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '4px' }}>
+                                  Color: <span style={{ color: 'var(--text-primary)' }}>{item.color}</span>
+                                </p>
+                              )}
                               <p className="text-sm">Qty: {item.quantity} × ${item.price}</p>
                             </div>
                           </div>

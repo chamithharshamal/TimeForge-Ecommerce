@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Navigate } from 'react-router-dom';
 import api from '../api/axios';
-import { LayoutDashboard, Users, Watch, Settings, Plus, Edit2, Trash2, X, Image as ImageIcon, Upload, Menu, DollarSign } from 'lucide-react';
+import { LayoutDashboard, Users, Watch, Settings, Plus, Edit2, Trash2, X, Image as ImageIcon, Upload, Menu, DollarSign, Wand2 } from 'lucide-react';
 
 export default function AdminDashboard() {
   const { user, loading: authLoading } = useAuth();
@@ -23,12 +23,15 @@ export default function AdminDashboard() {
     name: '',
     description: '',
     price: '',
+    color: '',
     stock: '',
-    badge: ''
+    badge: '',
+    imageUrl: ''
   });
   const [imageFile, setImageFile] = useState(null);
   const [previewSrc, setPreviewSrc] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
 
   const fileInputRef = useRef(null);
 
@@ -42,6 +45,26 @@ export default function AdminDashboard() {
       console.error("Failed to load watches", err);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleGenerateDescription = async () => {
+    if (!formData.name) {
+      alert("Please enter a watch name first to generate a description.");
+      return;
+    }
+    setIsGenerating(true);
+    try {
+      const { data } = await api.post('/watches/generate-description', {
+        name: formData.name,
+        color: formData.color
+      });
+      setFormData(prev => ({ ...prev, description: data.description }));
+    } catch (err) {
+      console.error("Generation failed", err);
+      alert(err.response?.data?.error || "Failed to generate AI description.");
+    } finally {
+      setIsGenerating(false);
     }
   };
 
@@ -95,7 +118,7 @@ export default function AdminDashboard() {
 
   const openAddModal = () => {
     setEditingId(null);
-    setFormData({ name: '', description: '', price: '', stock: '', badge: '' });
+    setFormData({ name: '', description: '', price: '', color: '', stock: '', badge: '', imageUrl: '' });
     setImageFile(null);
     setPreviewSrc(null);
     setIsModalOpen(true);
@@ -107,12 +130,21 @@ export default function AdminDashboard() {
       name: watch.name,
       description: watch.description || '',
       price: watch.price,
+      color: watch.color || '',
       stock: watch.stock,
-      badge: watch.badge || ''
+      badge: watch.badge || '',
+      imageUrl: watch.image_path && filter_var_url(watch.image_path) ? watch.image_path : ''
     });
     setImageFile(null);
     setPreviewSrc(watch.image_url);
     setIsModalOpen(true);
+  };
+
+  // Helper for edit modal URL detection
+  const filter_var_url = (path) => {
+    try {
+      return path.startsWith('http');
+    } catch { return false; }
   };
 
   const closeModal = () => setIsModalOpen(false);
@@ -136,11 +168,14 @@ export default function AdminDashboard() {
     payload.append('description', formData.description);
     payload.append('price', formData.price);
     payload.append('stock', formData.stock);
+    if(formData.color) payload.append('color', formData.color);
     if(formData.badge) payload.append('badge', formData.badge);
     
     // When updating, we might not send a new file
     if (imageFile) {
       payload.append('image', imageFile);
+    } else if (formData.imageUrl) {
+      payload.append('image_url', formData.imageUrl);
     }
 
     // In Laravel, PUT requests via FormData can be tricky. We use POST and append _method='PUT'
@@ -182,8 +217,7 @@ export default function AdminDashboard() {
       
       {/* Mobile Header Bar (Only visible on small screens) */}
       <div style={{ 
-        display: 'none', 
-        '@media (max-width: 768px)': { display: 'flex' } 
+        display: 'none'
       }} className="mobile-admin-header">
         <button 
           onClick={() => setIsSidebarOpen(true)}
@@ -323,6 +357,7 @@ export default function AdminDashboard() {
                             <img src={watch.image_url} alt={watch.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                           </div>
                           <div style={{ fontWeight: '500' }}>{watch.name}</div>
+                          {watch.color && <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{watch.color}</div>}
                         </td>
                         <td style={{ padding: '16px 20px' }}>${Number(watch.price).toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
                         <td style={{ padding: '16px 20px' }}>
@@ -422,14 +457,14 @@ export default function AdminDashboard() {
                 <label className="input-label">Product Image (Drop or Browse)</label>
                 <div 
                   onClick={() => fileInputRef.current?.click()}
-                  style={{ width: '100%', height: '200px', border: '2px dashed var(--border-color)', borderRadius: '12px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', background: previewSrc ? '#000' : 'rgba(255,255,255,0.02)', overflow: 'hidden', position: 'relative' }}
+                  style={{ width: '100%', height: '200px', border: '2px dashed var(--border-color)', borderRadius: '12px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', background: previewSrc ? '#000' : 'rgba(255,255,255,0.02)', overflow: 'hidden', position: 'relative', marginBottom: '12px' }}
                 >
                   {previewSrc ? (
                     <>
                       <img src={previewSrc} alt="Preview" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                       <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0, transition: 'opacity 0.2s', ':hover': { opacity: 1 } }} onMouseEnter={(e) => e.currentTarget.style.opacity = 1} onMouseLeave={(e) => e.currentTarget.style.opacity = 0}>
                         <div style={{ background: 'var(--bg-glass)', padding: '8px 16px', borderRadius: '20px', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <Upload size={16} /> Replace Image
+                          <Upload size={16} /> Replace File
                         </div>
                       </div>
                     </>
@@ -448,6 +483,20 @@ export default function AdminDashboard() {
                     style={{ display: 'none' }}
                   />
                 </div>
+
+                <div className="form-group">
+                  <label className="input-label" style={{ fontSize: '0.75rem', opacity: 0.8 }}>OR Paste Public Image URL (Ensures FB Photo Works)</label>
+                  <input 
+                    type="url" 
+                    className="input-field" 
+                    value={formData.imageUrl} 
+                    onChange={e => {
+                      setFormData({...formData, imageUrl: e.target.value});
+                      if (e.target.value && !imageFile) setPreviewSrc(e.target.value);
+                    }} 
+                    placeholder="https://images.unsplash.com/your-image.jpg" 
+                  />
+                </div>
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
@@ -457,8 +506,18 @@ export default function AdminDashboard() {
                 </div>
                 
                 <div className="form-group" style={{ gridColumn: '1 / -1' }}>
-                  <label className="input-label">Description (Optional)</label>
-                  <textarea className="input-field" rows={3} value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} placeholder="Detailed luxurious narrative..." />
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                    <label className="input-label" style={{ marginBottom: 0 }}>Description (Optional)</label>
+                    <button type="button" onClick={handleGenerateDescription} disabled={isGenerating} style={{ background: 'transparent', color: 'var(--accent-primary)', border: '1px solid var(--accent-primary)', padding: '6px 14px', borderRadius: '6px', fontSize: '0.75rem', fontWeight: '500', cursor: isGenerating ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: '6px', transition: 'all 0.2s', opacity: isGenerating ? 0.7 : 1 }} onMouseEnter={(e) => { if(!isGenerating) { e.currentTarget.style.background = 'rgba(212, 175, 55, 0.1)'; } }} onMouseLeave={(e) => { if(!isGenerating) { e.currentTarget.style.background = 'transparent'; } }}>
+                      <Wand2 size={14} /> {isGenerating ? 'Generating...' : 'Generate Description'}
+                    </button>
+                  </div>
+                  <textarea className="input-field" rows={4} value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} placeholder="Detailed luxurious narrative..." />
+                </div>
+
+                <div className="form-group" style={{ gridColumn: '1 / -1' }}>
+                  <label className="input-label">Color / Finish</label>
+                  <input type="text" className="input-field" value={formData.color} onChange={e => setFormData({...formData, color: e.target.value})} placeholder="e.g. Rose Gold, Matte Black" />
                 </div>
 
                 <div className="form-group">

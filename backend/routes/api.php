@@ -38,6 +38,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // Admin Only Watch routes
     Route::middleware([CheckAdmin::class])->group(function () {
         Route::post('/watches', [WatchController::class, 'store']);
+        Route::post('/watches/generate-description', [WatchController::class, 'generateDescription']);
         Route::put('/watches/{id}', [WatchController::class, 'update']);
         Route::delete('/watches/{id}', [WatchController::class, 'destroy']);
         
@@ -47,3 +48,4 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('/admin/users/{id}', [AdminController::class, 'deleteUser']);
     });
 });
+

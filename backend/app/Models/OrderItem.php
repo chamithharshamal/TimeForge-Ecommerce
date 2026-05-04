@@ -12,6 +12,7 @@ class OrderItem extends Model
         'watch_id',
         'quantity',
         'price',
+        'color',
     ];
 
     public function order(): BelongsTo

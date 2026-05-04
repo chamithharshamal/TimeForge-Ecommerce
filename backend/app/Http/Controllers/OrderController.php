@@ -57,7 +57,8 @@ class OrderController extends Controller
                     'order_id' => $order->id,
                     'watch_id' => $item->watch_id,
                     'quantity' => $item->quantity,
-                    'price' => $item->watch->price
+                    'price' => $item->watch->price,
+                    'color' => $item->color
                 ]);
 
                 // Reduce stock
